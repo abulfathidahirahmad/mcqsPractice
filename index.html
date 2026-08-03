@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCQ Study Bank - Paediatrics & Medical MCQs</title>
+  <meta name="description" content="Production-quality, mobile-first MCQ Study Web Application for Paediatrics & Medical exams. Practice True/False options with detailed explanations.">
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Loading Screen Overlay -->
+  <div id="loading-screen" class="loading-overlay">
+    <div class="loading-content">
+      <div class="loading-icon-wrapper">
+        <img src="assets/icon.svg" alt="MCQ Study Icon" class="loading-icon pulse">
+      </div>
+      <h2 class="loading-title">MCQ Study Bank</h2>
+      <p class="loading-sub">Loading Question Bank...</p>
+      <div class="loading-bar-container">
+        <div id="loading-bar" class="loading-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App Shell -->
+  <div id="app" class="app-container hidden">
+
+    <!-- Header Navigation -->
+    <header class="app-header">
+      <div class="header-left">
+        <button id="btn-toggle-drawer" class="icon-btn" aria-label="Toggle Question Palette" title="Question Palette (Grid)">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+          </svg>
+        </button>
+        <div class="brand">
+          <img src="assets/icon.svg" alt="Logo" class="brand-logo">
+          <span class="brand-name">MCQ Study</span>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <!-- Mode Selector Switch -->
+        <div class="mode-switch" role="radiogroup" aria-label="Study Mode Switch">
+          <button id="mode-study" class="mode-btn active" role="radio" aria-checked="true">Study Mode</button>
+          <button id="mode-practice" class="mode-btn" role="radio" aria-checked="false">Practice Mode</button>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Search trigger -->
+        <div class="search-box">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="search-input" placeholder="Search questions..." aria-label="Search questions">
+          <span class="search-shortcut">/</span>
+        </div>
+
+        <!-- Stats Modal Trigger -->
+        <button id="btn-stats" class="icon-btn" aria-label="View Statistics" title="Statistics Dashboard">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+        </button>
+
+        <!-- Theme Toggle -->
+        <button id="btn-theme-toggle" class="icon-btn" aria-label="Toggle Dark/Light Theme" title="Toggle Light/Dark Theme">
+          <svg id="theme-icon-sun" class="icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg id="theme-icon-moon" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area & Layout -->
+    <div class="main-layout">
+
+      <!-- CBT Drawer Backdrop (Mobile) -->
+      <div id="drawer-backdrop" class="drawer-backdrop"></div>
+
+      <!-- CBT Sidebar Drawer -->
+      <aside id="palette-drawer" class="palette-drawer">
+        <div class="drawer-header">
+          <h3 class="drawer-title">Question Palette</h3>
+          <button id="btn-close-drawer" class="icon-btn icon-btn-sm" aria-label="Close Palette">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Jump to question -->
+        <div class="jump-box">
+          <input type="number" id="jump-input" min="1" max="231" placeholder="Jump to Q#" aria-label="Jump to question number">
+          <button id="jump-btn" class="btn btn-secondary btn-sm">Go</button>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-chips">
+          <button class="chip active" data-filter="all">All <span id="count-all">0</span></button>
+          <button class="chip" data-filter="unanswered">Unanswered <span id="count-unanswered">0</span></button>
+          <button class="chip" data-filter="correct">Correct <span id="count-correct">0</span></button>
+          <button class="chip" data-filter="incorrect">Incorrect <span id="count-incorrect">0</span></button>
+          <button class="chip" data-filter="bookmarked">Bookmarked <span id="count-bookmarked">0</span></button>
+        </div>
+
+        <!-- Grid of Numbers -->
+        <div id="question-grid" class="question-grid">
+          <!-- Grid items injected dynamically -->
+        </div>
+
+        <div class="palette-legend">
+          <div class="legend-item"><span class="dot dot-unvisited"></span> Unvisited</div>
+          <div class="legend-item"><span class="dot dot-visited"></span> Visited</div>
+          <div class="legend-item"><span class="dot dot-correct"></span> Correct</div>
+          <div class="legend-item"><span class="dot dot-incorrect"></span> Incorrect</div>
+          <div class="legend-item"><span class="dot dot-bookmarked"></span> Bookmarked</div>
+        </div>
+      </aside>
+
+      <!-- Main Study Workspace -->
+      <main class="workspace">
+
+        <!-- Landing / Welcome Banner (Shown if fresh start) -->
+        <section id="landing-banner" class="landing-card hidden">
+          <div class="hero-content">
+            <img src="assets/icon.svg" alt="MCQ Study Logo" class="hero-logo">
+            <h1 class="hero-title">Paediatrics & Medical MCQ Study Bank</h1>
+            <p class="hero-desc">Interactive 5-Option Multiple True/False question bank with detailed explanations, CBT navigation, and performance tracking.</p>
+            <div class="hero-actions">
+              <button id="btn-hero-start" class="btn btn-primary btn-lg">Start Studying</button>
+              <button id="btn-hero-continue" class="btn btn-secondary btn-lg hidden">Continue Previous Session</button>
+            </div>
+            <div class="hero-credit">
+              Built by <strong>Abulfathi Dahiru Ahmad</strong>
+            </div>
+          </div>
+        </section>
+
+        <!-- Question Container -->
+        <section id="question-view" class="question-card">
+          
+          <!-- Top Bar: Meta Info & Actions -->
+          <div class="question-header">
+            <div class="question-meta">
+              <span id="question-index-badge" class="badge badge-primary">Question 1 of 231</span>
+              <span id="question-type-badge" class="badge badge-secondary">Multiple True/False</span>
+              <span id="question-status-badge" class="badge badge-outline">Unvisited</span>
+            </div>
+
+            <div class="question-header-actions">
+              <button id="btn-bookmark" class="icon-btn" aria-label="Bookmark Question" title="Bookmark Question (B)">
+                <svg id="bookmark-icon" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Question Text -->
+          <div class="question-body">
+            <p id="question-text" class="question-text">Question prompt will load here...</p>
+          </div>
+
+          <!-- Options Container (A, B, C, D, E) -->
+          <div id="options-container" class="options-container">
+            <!-- Dynamically populated options A-E -->
+          </div>
+
+          <!-- Question Action Bar -->
+          <div class="action-bar">
+            <div class="action-bar-left">
+              <button id="btn-submit" class="btn btn-primary hidden">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Submit Answers
+              </button>
+              <button id="btn-reset-current" class="btn btn-ghost btn-sm">Clear Choices</button>
+            </div>
+
+            <div class="action-bar-right">
+              <button id="btn-prev" class="btn btn-secondary">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                Previous
+              </button>
+              <button id="btn-next" class="btn btn-primary">
+                Next
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Personal Notes Accordion/Box -->
+          <div class="notes-section">
+            <details id="notes-details">
+              <summary class="notes-summary">
+                <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Personal Notes for this Question
+              </summary>
+              <div class="notes-content">
+                <textarea id="notes-input" placeholder="Type your study notes or memory tricks here... (Auto-saved locally)" rows="3"></textarea>
+              </div>
+            </details>
+          </div>
+
+        </section>
+
+      </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-content">
+        <span class="footer-credit">Built: <strong>Abulfathi Dahiru Ahmad</strong></span>
+        <span class="footer-shortcut-hint">Shortcuts: <kbd>←</kbd> Prev | <kbd>→</kbd> Next | <kbd>B</kbd> Bookmark | <kbd>/</kbd> Search</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Statistics Modal -->
+  <div id="stats-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Performance & Progress</h3>
+        <button id="btn-close-stats" class="icon-btn icon-btn-sm" aria-label="Close Statistics">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="stats-overview">
+          <div class="chart-container">
+            <svg id="accuracy-gauge" class="gauge-svg" viewBox="0 0 120 120">
+              <circle class="gauge-bg" cx="60" cy="60" r="50"></circle>
+              <circle id="gauge-progress" class="gauge-fill" cx="60" cy="60" r="50"></circle>
+            </svg>
+            <div class="gauge-text">
+              <span id="stat-accuracy" class="gauge-percent">0%</span>
+              <span class="gauge-label">Accuracy</span>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-box">
+              <span class="stat-num" id="stat-total">0</span>
+              <span class="stat-lbl">Total Questions</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num" id="stat-attempted">0</span>
+              <span class="stat-lbl">Attempted</span>
+            </div>
+            <div class="stat-box text-success">
+              <span class="stat-num" id="stat-correct">0</span>
+              <span class="stat-lbl">Correct Options</span>
+            </div>
+            <div class="stat-box text-danger">
+              <span class="stat-num" id="stat-incorrect">0</span>
+              <span class="stat-lbl">Incorrect Options</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num" id="stat-remaining">0</span>
+              <span class="stat-lbl">Remaining</span>
+            </div>
+            <div class="stat-box text-warning">
+              <span class="stat-num" id="stat-bookmarked">0</span>
+              <span class="stat-lbl">Bookmarked</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button id="btn-copy-stats" class="btn btn-secondary">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            Copy Score Summary
+          </button>
+          <button id="btn-reset-progress" class="btn btn-outline-danger">Reset Progress</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="questions.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -226,35 +226,41 @@
   // --- FILTER & SEARCH ---
   function applyFiltersAndSearch() {
     const query = state.searchQuery.toLowerCase().trim();
-    
-    state.filteredQuestions = state.questions.filter((q) => {
-      // 1. Filter match
-      const qStatus = getQuestionStatus(q.id);
-      let matchesFilter = true;
-      if (state.filter === 'unanswered') matchesFilter = !state.submittedState[q.id];
-      else if (state.filter === 'correct') matchesFilter = qStatus === 'correct';
-      else if (state.filter === 'incorrect') matchesFilter = qStatus === 'incorrect';
-      else if (state.filter === 'bookmarked') matchesFilter = state.bookmarks.has(q.id);
 
-      if (!matchesFilter) return false;
+      // When in PRACTICE mode the user asked to see the full question bank
+      if (state.mode === 'practice') {
+        // show all questions in practice mode (but still preserve ordering)
+        state.filteredQuestions = state.questions.slice();
+      } else {
+        state.filteredQuestions = state.questions.filter((q) => {
+          // 1. Filter match
+          const qStatus = getQuestionStatus(q.id);
+          let matchesFilter = true;
+          if (state.filter === 'unanswered') matchesFilter = !state.submittedState[q.id];
+          else if (state.filter === 'correct') matchesFilter = qStatus === 'correct';
+          else if (state.filter === 'incorrect') matchesFilter = qStatus === 'incorrect';
+          else if (state.filter === 'bookmarked') matchesFilter = state.bookmarks.has(q.id);
 
-      // 2. Search query match
-      if (!query) return true;
+          if (!matchesFilter) return false;
 
-      const inQuestion = q.question.toLowerCase().includes(query);
-      const inOptions = q.options.some(opt => 
-        opt.text.toLowerCase().includes(query) || 
-        opt.explanation.toLowerCase().includes(query)
-      );
-      
-      return inQuestion || inOptions;
-    });
+          // 2. Search query match
+          if (!query) return true;
 
-    // Ensure valid current index within filtered list
-    if (state.currentIndex >= state.filteredQuestions.length) {
-      state.currentIndex = Math.max(0, state.filteredQuestions.length - 1);
+          const inQuestion = q.question.toLowerCase().includes(query);
+          const inOptions = q.options.some(opt => 
+            opt.text.toLowerCase().includes(query) || 
+            opt.explanation.toLowerCase().includes(query)
+          );
+        
+          return inQuestion || inOptions;
+        });
+      }
+
+      // Ensure valid current index within filtered list
+      if (state.currentIndex >= state.filteredQuestions.length) {
+        state.currentIndex = Math.max(0, state.filteredQuestions.length - 1);
+      }
     }
-  }
 
   function getQuestionStatus(qId) {
     if (!state.submittedState[qId]) {
@@ -295,7 +301,15 @@
     // Badges & Meta
     const overallIndex = state.questions.findIndex(item => item.id === q.id) + 1;
     dom.questionIndexBadge.textContent = `Question ${overallIndex} of ${state.questions.length}`;
-    
+
+    // If a topic field exists on the question, display it once in the type/topic badge.
+    if (q.topic) {
+      dom.questionTypeBadge.textContent = q.topic;
+    } else {
+      // Fallback to the existing type label
+      dom.questionTypeBadge.textContent = (q.type === 'MTF' ? 'Multiple True/False' : q.type || 'Question');
+    }
+
     const qStatus = getQuestionStatus(q.id);
     dom.questionStatusBadge.textContent = qStatus.toUpperCase();
     dom.questionStatusBadge.className = `badge badge-outline status-${qStatus}`;
@@ -309,8 +323,20 @@
       dom.bookmarkIcon.setAttribute('stroke', 'currentColor');
     }
 
-    // Question Text
-    dom.questionText.textContent = q.question;
+    // Question Text - avoid repeating the topic name if it appears at the start of the question text
+    (function() {
+      let displayed = q.question || '';
+      if (q.topic && typeof displayed === 'string') {
+        const normalizedTopic = q.topic.trim();
+        if (normalizedTopic.length > 0) {
+          // escape regex special chars in topic
+          const esc = normalizedTopic.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const re = new RegExp('^' + esc + '[:\-–—\s]*', 'i');
+          displayed = displayed.replace(re, '').trim();
+        }
+      }
+      dom.questionText.textContent = displayed;
+    })();
 
     // Render Options A-E
     renderOptions(q);

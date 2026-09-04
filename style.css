@@ -383,11 +383,34 @@ h1, h2, h3, h4, h5, h6 {
   position: sticky;
   top: 64px;
   overflow-y: auto;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, width 0.25s ease, padding 0.25s ease;
 
   /* Custom Scrollbar styling */
   scrollbar-width: thin;
   scrollbar-color: var(--border-color) transparent;
+}
+
+/* Collapsed sidebar for desktop: compact vertical strip, keep icons but hide verbose text */
+.palette-drawer.collapsed {
+  width: 64px;               /* narrow collapsed width */
+  padding: 10px 8px;
+}
+
+.palette-drawer.collapsed .drawer-title,
+.palette-drawer.collapsed .filter-chips,
+.palette-drawer.collapsed .jump-box,
+.palette-drawer.collapsed .palette-legend {
+  display: none !important; /* hide auxiliary content when collapsed */
+}
+
+.palette-drawer.collapsed .question-grid {
+  grid-template-columns: repeat(1, 1fr);
+  gap: 6px;
+}
+
+/* Make sure workspace uses available space - no fixed left margin required because layout is flex-based */
+@media (max-width: 768px) {
+  .palette-drawer.collapsed { transform: translateX(-100%); }
 }
 
 .drawer-header {
